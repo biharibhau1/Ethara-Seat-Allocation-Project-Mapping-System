@@ -6,8 +6,9 @@ search, a stats dashboard, and a natural-language AI assistant.
 
 ## Stack
 
-- **Backend:** Python, FastAPI, SQLAlchemy
+- **Backend:** Python, FastAPI 0.139, SQLAlchemy 2.0, Pydantic v2
 - **Database:** SQLite for local/demo (swap `DATABASE_URL` env var for Postgres in prod)
+- **Frontend:** React 19 + Vite + Tailwind v4 + React Router 7
 - **AI Assistant:** Rule-based intent parser (offline, no API key needed). Designed
   so a real LLM call can be dropped in on top of the same intent handlers.
 
@@ -16,18 +17,24 @@ search, a stats dashboard, and a natural-language AI assistant.
 ```
 backend/
   app/
-    main.py          # FastAPI app + router registration
-    database.py       # DB engine/session
-    models.py          # SQLAlchemy models: Employee, Project, Seat, SeatAllocation
-    schemas.py         # Pydantic request/response schemas
-    seed.py            # Seed data generator (5000 employees, 5500 seats, etc.)
+    main.py            # FastAPI app + router registration + CORS
+    database.py         # DB engine/session (SQLite by default, DATABASE_URL for Postgres)
+    models.py            # SQLAlchemy models: Employee, Project, Seat, SeatAllocation
+    schemas.py            # Pydantic request/response schemas
+    seed.py                # Seed data generator (5000 employees, 5500 seats, etc.)
     routers/
-      employees.py     # CRUD + search
-      projects.py       # CRUD + list employees by project
-      seats.py           # CRUD, /available, /allocate (with proximity logic), /release
-      dashboard.py       # /summary, /project-utilization, /floor-utilization
-      ai.py                # POST /ai/query natural-language assistant
+      employees.py         # CRUD + search        -> /employees
+      projects.py            # CRUD + list employees by project -> /projects
+      seats.py                 # CRUD, /available, /allocate (proximity logic), /release -> /seats
+      dashboard.py                # /summary, /project-utilization, /floor-utilization -> /dashboard
+      ai.py                          # POST /ai/query natural-language assistant -> /ai
   requirements.txt
+frontend/
+  src/
+    pages/            # Landing, Dashboard, Employees, Seats, Assistant
+    components/       # Sidebar, StatCard
+    api.js            # fetch wrapper, base URL from VITE_API_URL
+AI_PROMPTS.md         # Prompt-by-prompt log of how this project was built with AI
 ```
 
 ## Running locally
@@ -39,7 +46,8 @@ pip install -r requirements.txt
 python -m app.seed        # generates seed data into ethara_seats.db
 uvicorn app.main:app --reload
 ```
-Visit `http://localhost:8000/docs` for interactive Swagger API docs.
+Visit `http://localhost:8000/docs` for interactive Swagger API docs, or
+`http://localhost:8000/health` for a liveness check.
 
 **Frontend:**
 ```bash
@@ -65,6 +73,54 @@ React + Vite + Tailwind v4. Five screens:
 - **Assistant** (`/assistant`) — chat UI against `POST /ai/query`, with example prompts and
   an optional email field for "my seat" / "who's near me" questions
 
+## API Reference
+
+All routes are mounted with the prefixes below (see `main.py`); full interactive
+docs are always available at `/docs`.
+
+### Employees — `/employees`
+| Method | Path | Description |
+|---|---|---|
+| POST | `/employees` | Create employee (rejects duplicate email) |
+| GET | `/employees` | List/search employees (query params, `limit`/`offset`) |
+| GET | `/employees/{employee_id}` | Get one employee |
+| PUT | `/employees/{employee_id}` | Update employee |
+| DELETE | `/employees/{employee_id}` | Deactivate employee (204) |
+
+### Projects — `/projects`
+| Method | Path | Description |
+|---|---|---|
+| POST | `/projects` | Create project |
+| GET | `/projects` | List all projects |
+| GET | `/projects/{project_id}/employees` | List employees on a project |
+
+### Seats — `/seats`
+| Method | Path | Description |
+|---|---|---|
+| POST | `/seats` | Create seat (rejects duplicate seat number on same floor/zone) |
+| GET | `/seats` | List seats, filterable by `floor`, `zone`, `status` |
+| GET | `/seats/available` | List available seats, filterable by `floor`, `zone` |
+| POST | `/seats/allocate` | Allocate a seat to an employee (proximity logic, see below) |
+| POST | `/seats/release` | Release an employee's active seat back to `available` |
+
+### Dashboard — `/dashboard`
+| Method | Path | Description |
+|---|---|---|
+| GET | `/dashboard/summary` | Total employees/seats, occupied/available/reserved counts, pending allocations |
+| GET | `/dashboard/project-utilization` | Seats occupied per project |
+| GET | `/dashboard/floor-utilization` | Occupancy % per floor |
+
+### AI Assistant — `/ai`
+| Method | Path | Description |
+|---|---|---|
+| POST | `/ai/query` | Natural-language query, see below |
+
+### Misc
+| Method | Path | Description |
+|---|---|---|
+| GET | `/` | `{"status": "ok", "docs": "/docs"}` |
+| GET | `/health` | `{"status": "healthy"}` |
+
 ## Seed Data
 
 `python -m app.seed` generates, matching the assessment spec:
@@ -79,9 +135,13 @@ React + Vite + Tailwind v4. Five screens:
 `POST /seats/allocate` with just `employee_id`:
 1. Uses `preferred_zone` if passed.
 2. Otherwise finds the zone where the most active teammates on the same
-   project already sit, and allocates there.
+   project already sit (`_find_best_zone_for_project` in `seats.py`), and
+   allocates there.
 3. Falls back to any available seat in any zone if the preferred/team zone
    has none free.
+
+Rejects the request with `400` if the employee already has an active
+allocation.
 
 ## AI Assistant
 
@@ -96,13 +156,8 @@ React + Vite + Tailwind v4. Five screens:
 This is a deterministic keyword/regex intent parser — it works fully offline
 and is easy to demo without any external API dependency. A real LLM (Claude/
 OpenAI) can be layered on top to handle free-form phrasing the rules miss,
-using the same underlying data-fetch functions.
-
-## What's not yet built (next steps)
-
-- Deployment (Railway/Render/Vercel) + live URLs
-- CSV bulk upload for employee/seat data
-- Auth / role-based access (Employee vs HR/Admin)
+using the same underlying data-fetch functions (`_find_employee`,
+`_employee_seat_answer`, etc. in `ai.py`).
 
 ## Business Rules Enforced
 
@@ -111,3 +166,17 @@ using the same underlying data-fetch functions.
 - Released seats return to `available`
 - Duplicate employee email rejected
 - Duplicate seat number on same floor/zone rejected
+
+## Development Notes
+
+`AI_PROMPTS.md` documents, prompt by prompt, how this app was built with AI
+assistance — architecture decisions, the database model, the proximity
+allocation logic, the AI assistant's fallback design, the landing page
+rework, testing performed, and bugs found/fixed along the way. Worth reading
+before extending the codebase.
+
+## What's not yet built (next steps)
+
+- Deployment (Railway/Render/Vercel) + live URLs
+- CSV bulk upload for employee/seat data
+- Auth / role-based access (Employee vs HR/Admin)
