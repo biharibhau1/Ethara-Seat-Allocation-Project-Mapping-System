@@ -1,0 +1,310 @@
+.landing-page{
+  --void:#0A0E13;
+  --panel:#141B23;
+  --panel-line:#1F2A35;
+  --blueprint:#2E6DA4;
+  --amber:#FFA94D;
+  --green:#4ADE80;
+  --brass:#C08552;
+  --brass-light:#E0A874;
+  --text-primary:#EDF1F5;
+  --text-dim:#6B7A87;
+
+  background:var(--void);
+  color:var(--text-primary);
+  font-family:'Inter',sans-serif;
+  position:relative;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+.landing-page *{box-sizing:border-box;}
+
+/* ---------- background layers ---------- */
+.landing-page .seatgrid{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  width:100%;
+  height:100%;
+}
+.landing-page .blueprint-svg{
+  position:fixed;
+  inset:0;
+  z-index:1;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+}
+.landing-page .vignette{
+  position:fixed;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+  background:radial-gradient(circle at 50% 48%, rgba(10,14,19,0) 0%, rgba(10,14,19,0) 22%, rgba(10,14,19,0.55) 55%, rgba(10,14,19,0.92) 85%);
+}
+
+/* ---------- top bar ---------- */
+.landing-page header{
+  position:relative;
+  z-index:5;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:28px 44px;
+}
+.landing-page .logo{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;
+  font-size:19px;
+  letter-spacing:0.5px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.landing-page .logo .dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 8px var(--green);
+  animation:ls-pulse-dot 2.2s ease-in-out infinite;
+}
+.landing-page .nav-meta{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  color:var(--text-dim);
+  letter-spacing:1px;
+  text-align:right;
+  line-height:1.6;
+}
+.landing-page .nav-meta span{color:var(--amber);}
+
+/* ---------- HUD stat panels ---------- */
+.landing-page .hud{
+  position:absolute;
+  z-index:5;
+  width:220px;
+  padding:16px 18px;
+  background:rgba(20,27,35,0.72);
+  border:1px solid var(--panel-line);
+  backdrop-filter:blur(6px);
+}
+.landing-page .hud .label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  letter-spacing:1.5px;
+  color:var(--text-dim);
+  margin-bottom:6px;
+}
+.landing-page .hud .value{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:26px;
+  font-weight:600;
+  color:var(--text-primary);
+  display:flex;
+  align-items:baseline;
+  gap:6px;
+}
+.landing-page .hud .value small{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  font-weight:400;
+  color:var(--text-dim);
+}
+.landing-page .hud .sub{
+  margin-top:8px;
+  font-size:11px;
+  color:var(--text-dim);
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.landing-page .hud .sub .swatch{width:7px;height:7px;border-radius:1px;}
+.landing-page .hud-tl{top:130px;left:44px;border-left:2px solid var(--blueprint);}
+.landing-page .hud-tr{top:130px;right:44px;border-right:2px solid var(--amber);text-align:right;}
+.landing-page .hud-tr .value{justify-content:flex-end;}
+.landing-page .hud-bl{bottom:110px;left:44px;border-left:2px solid var(--green);}
+.landing-page .hud-br{bottom:110px;right:44px;border-right:2px solid var(--brass);text-align:right;}
+.landing-page .hud-br .value{justify-content:flex-end;}
+
+/* ---------- center stage ---------- */
+.landing-page .stage{
+  position:relative;
+  z-index:6;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:120px 20px;
+  text-align:center;
+}
+.landing-page .eyebrow{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  letter-spacing:3px;
+  color:var(--blueprint);
+  text-transform:uppercase;
+  margin-bottom:18px;
+}
+.landing-page h1{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;
+  font-size:clamp(28px, 4.4vw, 48px);
+  line-height:1.15;
+  max-width:720px;
+  letter-spacing:-0.5px;
+  margin:0;
+}
+.landing-page h1 .hl{color:var(--amber);}
+.landing-page .sub-text{
+  margin-top:16px;
+  max-width:520px;
+  color:var(--text-dim);
+  font-size:15px;
+  line-height:1.6;
+}
+
+/* ---------- badge / access card ---------- */
+.landing-page .badge-wrap{
+  margin-top:52px;
+  position:relative;
+}
+.landing-page .lanyard{
+  width:2px;
+  height:34px;
+  background:var(--panel-line);
+  margin:0 auto;
+}
+.landing-page .badge{
+  width:300px;
+  background:linear-gradient(160deg,#182029,#0F151C);
+  border:1px solid var(--panel-line);
+  border-radius:14px;
+  padding:22px 24px 26px;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 30px 60px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(192,133,82,0.06);
+}
+.landing-page .badge::before{
+  content:"";
+  position:absolute;
+  top:0;left:-40%;
+  width:40%;height:100%;
+  background:linear-gradient(90deg, transparent, rgba(224,168,116,0.16), transparent);
+  animation:ls-scan 3.4s ease-in-out infinite;
+}
+.landing-page .badge-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px;
+}
+.landing-page .badge-top .chip{
+  width:28px;height:20px;
+  border-radius:4px;
+  background:linear-gradient(135deg,var(--brass-light),var(--brass));
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,0.25);
+}
+.landing-page .badge-top .id{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  color:var(--text-dim);
+  letter-spacing:1px;
+}
+.landing-page .badge-title{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  letter-spacing:2px;
+  color:var(--text-dim);
+  margin-bottom:4px;
+  text-align:left;
+}
+.landing-page .badge-name{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:18px;
+  font-weight:600;
+  text-align:left;
+  margin-bottom:20px;
+}
+.landing-page .enter-btn{
+  width:100%;
+  padding:15px 0;
+  border:none;
+  border-radius:8px;
+  background:linear-gradient(135deg,var(--brass-light),var(--brass));
+  color:#1A1206;
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;
+  font-size:15px;
+  letter-spacing:1px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.landing-page .enter-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 26px -8px rgba(192,133,82,0.55);
+}
+.landing-page .enter-btn:active{ transform:translateY(0); }
+.landing-page .enter-btn svg{width:16px;height:16px;}
+.landing-page .badge-foot{
+  margin-top:14px;
+  display:flex;
+  justify-content:space-between;
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px;
+  color:var(--text-dim);
+  letter-spacing:0.5px;
+}
+.landing-page .badge-foot .status{color:var(--green);display:flex;align-items:center;gap:5px;}
+.landing-page .badge-foot .status::before{
+  content:"";width:6px;height:6px;border-radius:50%;
+  background:var(--green);box-shadow:0 0 6px var(--green);
+}
+
+/* ---------- footer ticker ---------- */
+.landing-page .ticker-wrap{
+  position:relative;
+  z-index:5;
+  border-top:1px solid var(--panel-line);
+  padding:16px 0;
+  overflow:hidden;
+  background:rgba(10,14,19,0.6);
+}
+.landing-page .ticker{
+  display:flex;
+  gap:48px;
+  white-space:nowrap;
+  animation:ls-scroll-left 26s linear infinite;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;
+  color:var(--text-dim);
+  letter-spacing:1px;
+}
+.landing-page .ticker span::before{content:"\25C6  ";color:var(--blueprint);}
+
+/* ---------- animations ---------- */
+@keyframes ls-pulse-dot{
+  0%,100%{opacity:1;}
+  50%{opacity:0.35;}
+}
+@keyframes ls-scan{
+  0%{left:-40%;}
+  100%{left:120%;}
+}
+@keyframes ls-scroll-left{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-50%);}
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 900px){
+  .landing-page .hud{display:none;}
+  .landing-page header{padding:20px 20px;}
+  .landing-page .nav-meta{display:none;}
+}
+@media (prefers-reduced-motion: reduce){
+  .landing-page .badge::before, .landing-page .logo .dot, .landing-page .ticker{animation:none !important;}
+}

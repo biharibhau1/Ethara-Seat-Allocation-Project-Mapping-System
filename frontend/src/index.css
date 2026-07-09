@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Space Grotesk", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  --color-canvas: #F7F7F4;
+  --color-surface: #FFFFFF;
+  --color-line: #E3E3DE;
+  --color-ink: #1F2421;
+  --color-muted: #6B7268;
+
+  --color-brand: #2F5D50;
+  --color-brand-light: #E8F0EC;
+
+  --color-available: #3FA66B;
+  --color-available-bg: #E9F6EE;
+  --color-occupied: #2F5D50;
+  --color-occupied-bg: #E8F0EC;
+  --color-reserved: #C9922A;
+  --color-reserved-bg: #FBF1DF;
+  --color-maintenance: #B5484B;
+  --color-maintenance-bg: #FBEAEA;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--color-brand-light);
+}
