@@ -56,6 +56,7 @@ from faker import Faker
 
 from .database import Base, engine, SessionLocal
 from . import models
+from .auth import hash_password
 
 fake = Faker()
 random.seed(42)
@@ -391,9 +392,32 @@ def seed():
 
         db.commit()
 
+        # --- Sample login users (one per role) ---
+        # NOTE: demo credentials only — rotate/remove before any real deployment.
+        demo_employee = employees[0]  # deterministic given the fixed random.seed(42)
+        sample_users = [
+            models.User(username="admin", hashed_password=hash_password("admin123"), role=models.UserRole.admin),
+            models.User(username="hr", hashed_password=hash_password("hr123"), role=models.UserRole.hr),
+            models.User(username="manager", hashed_password=hash_password("manager123"), role=models.UserRole.manager),
+            models.User(
+                username="employee",
+                hashed_password=hash_password("employee123"),
+                role=models.UserRole.employee,
+                employee_id=demo_employee.id,
+            ),
+        ]
+        for u in sample_users:
+            db.add(u)
+        db.commit()
+
         # --- Summary ---
         print(f"Seed complete: {seat_count} seats, {total_employees} employees, "
               f"{len(project_objs_by_name)} projects")
+        print("  Sample login users (username / password / role):")
+        print("    admin / admin123 / admin")
+        print("    hr / hr123 / hr")
+        print("    manager / manager123 / manager")
+        print(f"    employee / employee123 / employee (linked to {demo_employee.name}, {demo_employee.employee_code})")
         print("  Departments:")
         for dept, count in DEPARTMENT_COUNTS.items():
             print(f"    {dept}: {count}")

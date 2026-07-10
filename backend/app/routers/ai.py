@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from .. import models
 from ..database import get_db
 from ..schemas import AIQueryRequest, AIQueryResponse
+from ..auth import get_current_user
 
 router = APIRouter(prefix="/ai", tags=["ai assistant"])
 
@@ -45,7 +46,11 @@ def _find_employee(db: Session, name: str = None, email: str = None):
 
 
 @router.post("/query", response_model=AIQueryResponse)
-def ai_query(payload: AIQueryRequest, db: Session = Depends(get_db)):
+def ai_query(
+    payload: AIQueryRequest,
+    db: Session = Depends(get_db),
+    _user: models.User = Depends(get_current_user),
+):
     q = payload.query.strip()
     q_lower = q.lower()
 

@@ -3,12 +3,17 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..database import get_db
+from ..auth import get_current_user, require_roles
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
 
 @router.post("", response_model=schemas.ProjectOut, status_code=201)
-def create_project(payload: schemas.ProjectCreate, db: Session = Depends(get_db)):
+def create_project(
+    payload: schemas.ProjectCreate,
+    db: Session = Depends(get_db),
+    _user: models.User = Depends(require_roles(models.UserRole.admin)),
+):
     if db.query(models.Project).filter(models.Project.name == payload.name).first():
         raise HTTPException(400, "Project already exists")
     project = models.Project(**payload.model_dump())
@@ -19,12 +24,16 @@ def create_project(payload: schemas.ProjectCreate, db: Session = Depends(get_db)
 
 
 @router.get("", response_model=list[schemas.ProjectOut])
-def list_projects(db: Session = Depends(get_db)):
+def list_projects(db: Session = Depends(get_db), _user: models.User = Depends(get_current_user)):
     return db.query(models.Project).all()
 
 
 @router.get("/{project_id}/employees", response_model=list[schemas.EmployeeOut])
-def list_project_employees(project_id: int, db: Session = Depends(get_db)):
+def list_project_employees(
+    project_id: int,
+    db: Session = Depends(get_db),
+    _user: models.User = Depends(get_current_user),
+):
     project = db.query(models.Project).get(project_id)
     if not project:
         raise HTTPException(404, "Project not found")

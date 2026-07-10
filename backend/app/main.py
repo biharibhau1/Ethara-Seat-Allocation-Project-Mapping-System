@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .database import Base, engine
-from .routers import employees, projects, seats, dashboard, ai
+from .routers import employees, projects, seats, dashboard, ai, auth
 
 Base.metadata.create_all(bind=engine)
 
@@ -14,12 +14,16 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://ethara-seat-allocation-project-mapp.vercel.app",
+        "http://localhost:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
 app.include_router(employees.router)
 app.include_router(projects.router)
 app.include_router(seats.router)

@@ -4,12 +4,13 @@ from sqlalchemy import func
 
 from .. import models
 from ..database import get_db
+from ..auth import get_current_user
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
 @router.get("/summary")
-def summary(db: Session = Depends(get_db)):
+def summary(db: Session = Depends(get_db), _user: models.User = Depends(get_current_user)):
     total_employees = db.query(func.count(models.Employee.id)).scalar()
     total_seats = db.query(func.count(models.Seat.id)).scalar()
     occupied = db.query(func.count(models.Seat.id)).filter(
@@ -40,7 +41,7 @@ def summary(db: Session = Depends(get_db)):
 
 
 @router.get("/project-utilization")
-def project_utilization(db: Session = Depends(get_db)):
+def project_utilization(db: Session = Depends(get_db), _user: models.User = Depends(get_current_user)):
     rows = (
         db.query(
             models.Project.name,
@@ -63,7 +64,7 @@ def project_utilization(db: Session = Depends(get_db)):
 
 
 @router.get("/floor-utilization")
-def floor_utilization(db: Session = Depends(get_db)):
+def floor_utilization(db: Session = Depends(get_db), _user: models.User = Depends(get_current_user)):
     floors = db.query(models.Seat.floor).distinct().all()
     result = []
     for (floor,) in floors:

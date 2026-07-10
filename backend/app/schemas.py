@@ -106,3 +106,29 @@ class AIQueryRequest(BaseModel):
 
 class AIQueryResponse(BaseModel):
     answer: str
+
+
+# ---------- Auth ----------
+class TokenOut(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    role: str
+    username: str
+    employee_id: Optional[int] = None
+
+
+class UserOut(BaseModel):
+    id: int
+    username: str
+    role: str
+    employee_id: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    role: str
+    employee_id: Optional[int] = None

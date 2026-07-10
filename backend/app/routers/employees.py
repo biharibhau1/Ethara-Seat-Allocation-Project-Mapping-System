@@ -5,12 +5,17 @@ from sqlalchemy import or_
 
 from .. import models, schemas
 from ..database import get_db
+from ..auth import get_current_user, require_roles
 
 router = APIRouter(prefix="/employees", tags=["employees"])
 
 
 @router.post("", response_model=schemas.EmployeeOut, status_code=201)
-def create_employee(payload: schemas.EmployeeCreate, db: Session = Depends(get_db)):
+def create_employee(
+    payload: schemas.EmployeeCreate,
+    db: Session = Depends(get_db),
+    _user: models.User = Depends(require_roles(models.UserRole.admin, models.UserRole.hr)),
+):
     if db.query(models.Employee).filter(models.Employee.email == payload.email).first():
         raise HTTPException(400, "Duplicate employee email is not allowed")
     if db.query(models.Employee).filter(models.Employee.employee_code == payload.employee_code).first():
@@ -35,6 +40,7 @@ def create_employee(payload: schemas.EmployeeCreate, db: Session = Depends(get_d
 @router.get("", response_model=list[schemas.EmployeeOut])
 def list_employees(
     db: Session = Depends(get_db),
+    _user: models.User = Depends(get_current_user),
     q: Optional[str] = Query(None, description="search by name/email/employee_code"),
     project_id: Optional[int] = None,
     status: Optional[str] = None,
@@ -59,7 +65,11 @@ def list_employees(
 
 
 @router.get("/{employee_id}", response_model=schemas.EmployeeOut)
-def get_employee(employee_id: int, db: Session = Depends(get_db)):
+def get_employee(
+    employee_id: int,
+    db: Session = Depends(get_db),
+    _user: models.User = Depends(get_current_user),
+):
     employee = db.query(models.Employee).get(employee_id)
     if not employee:
         raise HTTPException(404, "Employee not found")
@@ -67,7 +77,12 @@ def get_employee(employee_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{employee_id}", response_model=schemas.EmployeeOut)
-def update_employee(employee_id: int, payload: schemas.EmployeeUpdate, db: Session = Depends(get_db)):
+def update_employee(
+    employee_id: int,
+    payload: schemas.EmployeeUpdate,
+    db: Session = Depends(get_db),
+    _user: models.User = Depends(require_roles(models.UserRole.admin, models.UserRole.hr)),
+):
     employee = db.query(models.Employee).get(employee_id)
     if not employee:
         raise HTTPException(404, "Employee not found")
@@ -79,7 +94,11 @@ def update_employee(employee_id: int, payload: schemas.EmployeeUpdate, db: Sessi
 
 
 @router.delete("/{employee_id}", status_code=204)
-def deactivate_employee(employee_id: int, db: Session = Depends(get_db)):
+def deactivate_employee(
+    employee_id: int,
+    db: Session = Depends(get_db),
+    _user: models.User = Depends(require_roles(models.UserRole.admin, models.UserRole.hr)),
+):
     employee = db.query(models.Employee).get(employee_id)
     if not employee:
         raise HTTPException(404, "Employee not found")

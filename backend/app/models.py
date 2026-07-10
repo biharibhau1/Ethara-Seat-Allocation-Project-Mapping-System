@@ -25,6 +25,26 @@ class AllocationStatus(str, enum.Enum):
     released = "released"
 
 
+class UserRole(str, enum.Enum):
+    admin = "admin"
+    hr = "hr"
+    manager = "manager"      # project lead / team manager
+    employee = "employee"
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, nullable=False, index=True)
+    hashed_password = Column(String, nullable=False)
+    role = Column(Enum(UserRole), nullable=False, default=UserRole.employee)
+    employee_id = Column(Integer, ForeignKey("employees.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    employee = relationship("Employee")
+
+
 class Project(Base):
     __tablename__ = "projects"
 

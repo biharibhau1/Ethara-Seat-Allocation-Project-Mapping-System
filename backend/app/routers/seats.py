@@ -6,12 +6,17 @@ from sqlalchemy import func
 
 from .. import models, schemas
 from ..database import get_db
+from ..auth import get_current_user, require_roles
 
 router = APIRouter(prefix="/seats", tags=["seats"])
 
 
 @router.post("", response_model=schemas.SeatOut, status_code=201)
-def create_seat(payload: schemas.SeatCreate, db: Session = Depends(get_db)):
+def create_seat(
+    payload: schemas.SeatCreate,
+    db: Session = Depends(get_db),
+    _user: models.User = Depends(require_roles(models.UserRole.admin)),
+):
     exists = (
         db.query(models.Seat)
         .filter(
@@ -33,6 +38,7 @@ def create_seat(payload: schemas.SeatCreate, db: Session = Depends(get_db)):
 @router.get("", response_model=list[schemas.SeatOut])
 def list_seats(
     db: Session = Depends(get_db),
+    _user: models.User = Depends(get_current_user),
     floor: Optional[int] = None,
     zone: Optional[str] = None,
     status: Optional[str] = None,
@@ -52,6 +58,7 @@ def list_seats(
 @router.get("/available", response_model=list[schemas.SeatOut])
 def list_available_seats(
     db: Session = Depends(get_db),
+    _user: models.User = Depends(get_current_user),
     floor: Optional[int] = None,
     zone: Optional[str] = None,
     limit: int = Query(100, le=1000),
@@ -84,7 +91,11 @@ def _find_best_zone_for_project(db: Session, project_id: Optional[int]) -> Optio
 
 
 @router.post("/allocate", response_model=schemas.SeatAllocationOut, status_code=201)
-def allocate_seat(payload: schemas.SeatAllocateRequest, db: Session = Depends(get_db)):
+def allocate_seat(
+    payload: schemas.SeatAllocateRequest,
+    db: Session = Depends(get_db),
+    _user: models.User = Depends(require_roles(models.UserRole.admin, models.UserRole.hr)),
+):
     employee = db.query(models.Employee).get(payload.employee_id)
     if not employee:
         raise HTTPException(404, "Employee not found")
@@ -150,7 +161,11 @@ def allocate_seat(payload: schemas.SeatAllocateRequest, db: Session = Depends(ge
 
 
 @router.post("/release", status_code=200)
-def release_seat(payload: schemas.SeatReleaseRequest, db: Session = Depends(get_db)):
+def release_seat(
+    payload: schemas.SeatReleaseRequest,
+    db: Session = Depends(get_db),
+    _user: models.User = Depends(require_roles(models.UserRole.admin, models.UserRole.hr)),
+):
     allocation = (
         db.query(models.SeatAllocation)
         .filter(
