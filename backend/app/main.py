@@ -50,3 +50,13 @@ def root():
 @app.get("/health")
 def health():
     return {"status": "healthy"}
+
+
+@app.get("/seed")
+def trigger_seed():
+    from .seed import seed
+    try:
+        seed()
+        return {"status": "success", "message": "Database seeded successfully!"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
