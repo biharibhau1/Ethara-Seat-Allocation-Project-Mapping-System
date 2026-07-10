@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api } from "../api";
+import { useAuth, CAN_WRITE_ROLES } from "../auth/AuthContext";
 
 const statusStyles = {
   active: "bg-available-bg text-available",
@@ -16,6 +17,8 @@ const STATUS_OPTIONS = [
 ];
 
 export default function Employees() {
+  const { user } = useAuth();
+  const canWrite = CAN_WRITE_ROLES.includes(user?.role);
   const [searchParams, setSearchParams] = useSearchParams();
   const [q, setQ] = useState(searchParams.get("q") || "");
   const [status, setStatus] = useState(searchParams.get("status") || "");
@@ -139,9 +142,8 @@ export default function Employees() {
             <button
               key={emp.id}
               onClick={() => setSelected(emp)}
-              className={`w-full text-left px-4 py-3 hover:bg-canvas transition-colors ${
-                selected?.id === emp.id ? "bg-canvas" : ""
-              }`}
+              className={`w-full text-left px-4 py-3 hover:bg-canvas transition-colors ${selected?.id === emp.id ? "bg-canvas" : ""
+                }`}
             >
               <div className="flex justify-between items-center">
                 <span className="font-medium text-sm">{emp.name}</span>
@@ -178,9 +180,8 @@ export default function Employees() {
                 <dt className="text-muted">Status</dt>
                 <dd>
                   <span
-                    className={`text-xs px-2 py-0.5 rounded-full ${
-                      statusStyles[selected.status] || ""
-                    }`}
+                    className={`text-xs px-2 py-0.5 rounded-full ${statusStyles[selected.status] || ""
+                      }`}
                   >
                     {selected.status.replace("_", " ")}
                   </span>
@@ -188,20 +189,26 @@ export default function Employees() {
               </dl>
 
               <div className="mt-5 flex gap-2">
-                {selected.status === "pending_allocation" ? (
-                  <button
-                    onClick={() => handleAllocate(selected)}
-                    className="px-3 py-1.5 rounded-md bg-brand text-white text-sm font-medium hover:opacity-90"
-                  >
-                    Allocate seat
-                  </button>
+                {canWrite ? (
+                  selected.status === "pending_allocation" ? (
+                    <button
+                      onClick={() => handleAllocate(selected)}
+                      className="px-3 py-1.5 rounded-md bg-brand text-white text-sm font-medium hover:opacity-90"
+                    >
+                      Allocate seat
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleRelease(selected)}
+                      className="px-3 py-1.5 rounded-md border border-line text-sm font-medium hover:bg-canvas"
+                    >
+                      Release seat
+                    </button>
+                  )
                 ) : (
-                  <button
-                    onClick={() => handleRelease(selected)}
-                    className="px-3 py-1.5 rounded-md border border-line text-sm font-medium hover:bg-canvas"
-                  >
-                    Release seat
-                  </button>
+                  <div className="text-xs text-muted italic">
+                    Your role ({user?.role}) has read-only access. Allocating/releasing seats requires Admin or HR.
+                  </div>
                 )}
               </div>
             </div>

@@ -1,6 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./auth/AuthContext";
+import ProtectedRoute from "./auth/ProtectedRoute";
 import Sidebar from "./components/Sidebar";
 import Landing from "./pages/Landing";
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
 import Seats from "./pages/Seats";
@@ -15,44 +18,27 @@ function AppLayout({ children }) {
   );
 }
 
+function Protected({ children }) {
+  return (
+    <ProtectedRoute>
+      <AppLayout>{children}</AppLayout>
+    </ProtectedRoute>
+  );
+}
+
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route
-          path="/dashboard"
-          element={
-            <AppLayout>
-              <Dashboard />
-            </AppLayout>
-          }
-        />
-        <Route
-          path="/employees"
-          element={
-            <AppLayout>
-              <Employees />
-            </AppLayout>
-          }
-        />
-        <Route
-          path="/seats"
-          element={
-            <AppLayout>
-              <Seats />
-            </AppLayout>
-          }
-        />
-        <Route
-          path="/assistant"
-          element={
-            <AppLayout>
-              <Assistant />
-            </AppLayout>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+          <Route path="/employees" element={<Protected><Employees /></Protected>} />
+          <Route path="/seats" element={<Protected><Seats /></Protected>} />
+          <Route path="/assistant" element={<Protected><Assistant /></Protected>} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
