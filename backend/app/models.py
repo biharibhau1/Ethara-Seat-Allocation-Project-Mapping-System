@@ -38,7 +38,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False, index=True)
     hashed_password = Column(String, nullable=False)
-    role = Column(Enum(UserRole), nullable=False, default=UserRole.employee)
+    role = Column(Enum(UserRole, native_enum=False), nullable=False, default=UserRole.employee)
     employee_id = Column(Integer, ForeignKey("employees.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -68,7 +68,7 @@ class Employee(Base):
     department = Column(String)
     role = Column(String)
     joining_date = Column(Date, default=date.today)
-    status = Column(Enum(EmployeeStatus), default=EmployeeStatus.pending_allocation)
+    status = Column(Enum(EmployeeStatus, native_enum=False), default=EmployeeStatus.pending_allocation)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -88,7 +88,7 @@ class Seat(Base):
     zone = Column(String, nullable=False, index=True)
     bay = Column(String, nullable=False)
     seat_number = Column(String, nullable=False)
-    status = Column(Enum(SeatStatus), default=SeatStatus.available, index=True)
+    status = Column(Enum(SeatStatus, native_enum=False), default=SeatStatus.available, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     allocations = relationship("SeatAllocation", back_populates="seat")
@@ -101,7 +101,7 @@ class SeatAllocation(Base):
     employee_id = Column(Integer, ForeignKey("employees.id"), nullable=False)
     seat_id = Column(Integer, ForeignKey("seats.id"), nullable=False)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
-    allocation_status = Column(Enum(AllocationStatus), default=AllocationStatus.active, index=True)
+    allocation_status = Column(Enum(AllocationStatus, native_enum=False), default=AllocationStatus.active, index=True)
     allocation_date = Column(DateTime, default=datetime.utcnow)
     released_date = Column(DateTime, nullable=True)
 

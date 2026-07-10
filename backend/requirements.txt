@@ -6,3 +6,4 @@ faker==40.28.1
 python-multipart==0.0.32
 bcrypt==5.0.0
 python-jose[cryptography]==3.5.0
+pg8000==1.31.5

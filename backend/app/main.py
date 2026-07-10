@@ -12,14 +12,23 @@ app = FastAPI(
     version="1.0.0",
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
+import os
+
+# Dynamically load CORS origins from environment variable if set, otherwise use defaults
+cors_origins_str = os.getenv("CORS_ORIGINS")
+if cors_origins_str:
+    origins = [origin.strip() for origin in cors_origins_str.split(",") if origin.strip()]
+else:
+    origins = [
         "https://ethara-seat-allocation-project-mapp.vercel.app",
         "http://localhost:3000",
         "http://localhost:5173",
         "http://localhost:5174",
-    ],
+    ]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
