@@ -1,4 +1,18 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const getBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) return envUrl;
+
+  // Runtime auto-detection fallback for Vercel
+  if (typeof window !== "undefined" && window.location) {
+    const host = window.location.hostname;
+    if (host && !host.includes("localhost") && !host.includes("127.0.0.1")) {
+      return "https://ethara-seat-allocation-project-mapping-system-production.up.railway.app";
+    }
+  }
+  return "http://localhost:8000";
+};
+
+const BASE_URL = getBaseUrl();
 
 const TOKEN_KEY = "ethara_token";
 
