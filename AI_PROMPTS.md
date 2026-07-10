@@ -103,6 +103,52 @@ After confirming the candidate wanted it wired in as the real landing page:
   landing page renders standalone (no sidebar) while `/dashboard`,
   `/employees`, `/seats`, `/assistant` share the app layout.
 
+## Prompt 6b – Department & Project Restructure
+
+> "some changes in ethara_seed.db like floor 1 has 980/1100, floor 2 has
+> 1053/1100... total no. of projects will 18-20... highest number of
+> member will be in fenrir and skyforge" (first pass), followed by:
+> "department 1. research and development has 25 members / growth has 100
+> / technical ~1500 / stem 2000 / non-stem remaining... in seating
+> arrangement, first sort department wise..." (second pass, layering
+> departments on top), then simplified further: "140 individual cabins is
+> too much, maximum it can go up to 30 cabins, 1 area is fixed for r&d
+> team, other for growth."
+
+Iterated through three versions of the seating model as the candidate's
+own thinking evolved, rather than guessing the end state up front:
+1. Per-floor occupied targets + 19 weighted projects (Skyforge/Fenrir
+   highest headcount).
+2. Added 5 fixed-headcount departments (R&D 25, Growth 100, Technical
+   1500, STEM 2000, Non-STEM remainder) mapped to project groups, with
+   floors 1-2 as a combined "leadership" zone for R&D+Growth+promoted
+   staff.
+3. Consolidated to a single leadership floor per the candidate's
+   correction, with only 30 cabins (not 140) for promoted staff, and
+   dedicated open-plan zones (not cabins) for the R&D and Growth teams
+   specifically — this is the version that shipped.
+
+For the Non-STEM project names, Claude did a real web search on
+ethara.ai's actual service lines (RLHF/data-annotation/evaluation) rather
+than inventing generic names, landing on Text-to-Image Compare, Omni-ELO,
+Multimodal Annotation, Rubric Design, Dialogue Evaluation, Data Labeling
+Ops — all real categories of work that kind of company does.
+
+## Prompt 6c – Clickable Dashboard Stats
+
+> "all buttons like employees, total seats, occupied, available, reserved,
+> maintenance, pending allocation must be clickable and opens releted web
+> page."
+
+Made every `StatCard` an optional `<Link>` (falls back to a plain div if
+no `to` prop is given, so it doesn't force navigation everywhere). Routed
+each stat to a real filtered view: Employees → `/employees`; Total seats →
+`/seats`; Occupied/Available/Reserved/Maintenance → `/seats?status=X`;
+Pending allocation → `/employees?status=pending_allocation`. Since a
+status filter can span hundreds of seats across all 5 floors, the Floor
+Map page gained a second display mode — a paginated cross-floor list —
+instead of trying to force that into the existing single-zone grid.
+
 ## Prompt 7 – Testing
 
 Claude ran the app for real inside the sandbox rather than only
@@ -126,6 +172,16 @@ eyeballing the code:
   page would render, and requested `/dashboard` through the preview server
   to confirm client-side routing (SPA fallback) serves the app instead of
   a 404.
+- After adding auth: verified all 4 roles end-to-end with real `curl`
+  calls — no token gets 401, employee token can read but gets 403 on
+  create-employee and seat-allocate, hr token can allocate/release. Then
+  repeated the core flow in an actual headless browser via Playwright:
+  unauthenticated visit to `/dashboard` redirects to `/login`; logging in
+  as `employee` lands on `/dashboard` with the sidebar showing the right
+  role and no write buttons on the Employees page; logging in as `admin`
+  shows the Allocate/Release buttons. Screenshots taken of both views
+  rather than assuming the conditional rendering worked from reading the
+  code.
 
 ## Prompt 8 – Debugging
 
@@ -159,6 +215,54 @@ Issues Claude generated incorrectly, and how they were found/fixed:
 7. **Invalid `font-700` class** in the sidebar — Tailwind font-weight
    utilities are named (`font-semibold`), not numeric; fixed before it ever
    reached a build.
+8. **Seat-numbering gap bug** — the seed script renamed R&D/cabin seats to
+   `RD-xxx`/`CAB-xxx` when carving out the leadership floor, which pulled
+   those seats out of each zone's sequential `A1-001...A1-110` numbering
+   and left visible gaps (e.g. `A1-010` missing). Found because the
+   candidate reported it directly from the running app. Fixed by keeping
+   the original sequential seat number always and only changing the `bay`
+   field to indicate room type.
+9. **Project-utilization cross-join bug ("596750 seated")** — `/dashboard/
+   project-utilization` joined `Employee` and `SeatAllocation` to `Project`
+   independently (not to each other), so for a project with both many
+   employees and many allocations, the join produced every combination of
+   (employee row, allocation row) — the reported occupied-seat count was
+   literally `real_allocations × employee_count` (verified: 682 × 875 =
+   596,750 for Skyforge). Fixed with `func.count(...).distinct()` on the
+   allocation id, matching the pattern already used correctly for the
+   employee count in the same query.
+10. **passlib + bcrypt incompatibility** — `passlib`'s bcrypt backend
+    raises `AttributeError: module 'bcrypt' has no attribute '__about__'`
+    /  `password cannot be longer than 72 bytes` against bcrypt>=4.1, a
+    known unresolved upstream compatibility break. Verified by hashing a
+    trivial password directly and watching it fail before wiring auth into
+    the app at all. Switched to calling `bcrypt` directly (hash/checkpw)
+    instead of going through `passlib`.
+
+## Prompt 8b – Role-Based Access Control
+
+> "Role based access is one of the main priority add these"
+
+Added JWT auth with 4 roles (admin, hr, manager, employee) matching the
+spec's named personas (Employee/HR/Admin/Project teams). Design decisions:
+- A separate `User` table (username/hashed_password/role/optional
+  `employee_id` link) rather than bolting credentials onto `Employee`,
+  since not every employee needs a login and logins shouldn't require an
+  employee record (e.g. a pure HR/admin account).
+- Write endpoints (create/update/deactivate employee, create project/seat,
+  allocate/release seat) require `admin` or `hr` (or `admin`-only for
+  project/seat creation) via a `require_roles(...)` FastAPI dependency;
+  every other endpoint just requires a valid token (`get_current_user`).
+- Seed script creates one login per role with known demo credentials
+  (`admin/admin123`, `hr/hr123`, `manager/manager123`,
+  `employee/employee123` — the last linked to a real employee record).
+- Frontend: `AuthContext` (token in `localStorage`, this being a real
+  standalone app rather than a claude.ai artifact where that's
+  disallowed), a `ProtectedRoute` wrapper, a `/login` page with one-click
+  demo-credential buttons, and the Employees page's Allocate/Release
+  buttons are replaced with a "read-only" notice for roles that don't
+  have write access — mirroring the backend's 403s in the UI instead of
+  just letting the button fail silently.
 
 ## Prompt 9 – Deployment
 
@@ -184,8 +288,16 @@ importing the app.
 
 ## What AI generated incorrectly
 
-- The email dependency, the two regex bugs above, and the dead code branch
-  in `dashboard.py` (all listed under Prompt 8).
+All ten issues listed under Prompt 8's Debugging section: the missing
+`email-validator` dependency, two AI-assistant regex bugs, a dead code
+branch in `dashboard.py`, two Tailwind CSS mistakes (invalid grid-cols
+values, invalid `font-700` class), a seat-numbering gap bug introduced
+while carving out the leadership floor, a query cross-join bug that
+inflated one project's occupied-seat count by ~875x, and a `passlib`/
+`bcrypt` version incompatibility hit while wiring up auth. None of these
+were caught by "the code looks right" — each was found by actually running
+something (a server boot, a curl call, the candidate using the live app)
+and seeing the wrong output.
 
 ## How correctness was verified
 
