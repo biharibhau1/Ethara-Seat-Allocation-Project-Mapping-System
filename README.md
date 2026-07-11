@@ -124,7 +124,7 @@ Role-based demo account selections for easy login (Admin, HR, Manager, Employee)
 ### 3. Dashboard (`/dashboard`)
 KPI cards (each clickable, linking to a filtered Employees/Seats view), floor occupancy bars, and a project utilization table built from `/dashboard/summary`, `/dashboard/project-utilization`, and `/dashboard/floor-utilization`.
 
-![Dashboard](Screenshots/04_dashboard.png)
+![Dashboard](Screenshots/04_dashboard.png?v=2)
 
 ### 4. Employees (`/employees`)
 Search by name/email/employee code, view detail, and allocate/release seats for employees. *(Note: Actions are authorized based on user role).*
