@@ -107,17 +107,42 @@ npm run dev               # http://localhost:5173, expects backend at http://loc
 
 ---
 
-## Frontend Screens
+## Frontend Screens & Screenshots
 
 Built with React, Vite, and Tailwind v4. The interface includes five main screens:
 
-- **Landing** (`/`) — SeatSync-branded splash page with live stats (real employee/seat counts, utilization, pending allocations pulled from `/dashboard/summary`), an animated seat-grid background whose color mix reflects the occupied/available/reserved ratio, and an “Enter Dashboard” button that routes into the app.
-- **Dashboard** (`/dashboard`) — KPI cards (each clickable, linking to a filtered Employees/Seats view), floor occupancy bars, and a project utilization table built from `/dashboard/summary`, `/dashboard/project-utilization`, and `/dashboard/floor-utilization`.
-- **Employees** (`/employees`) — search by name/email/employee code, view detail, and allocate/release seats for employees. *(Note: Actions are authorized based on user role).*
-- **Floor Map** (`/seats`) — seating grid: pick a floor + zone to see every seat color-coded by status (available/occupied/reserved/maintenance) in a grid, with hover detail for seat number and bay. Or filter by status to get a paginated cross-floor list instead.
-- **Assistant** (`/assistant`) — chat UI against `POST /ai/query`, with example prompts and an optional email field for “my seat” / “who’s near me” questions.
+### 1. Landing Page (`/`)
+SeatSync-branded splash page with live stats (real employee/seat counts, utilization, pending allocations pulled from `/dashboard/summary`), an animated seat-grid background whose color mix reflects the occupied/available/reserved ratio, and an “Enter Dashboard” button that routes into the app.
+
+![Landing Page](Screenshots/01_landing.png)
+
+### 2. Login Page (`/login`)
+Role-based demo account selections for easy login (Admin, HR, Manager, Employee).
+
+![Login Page](Screenshots/03_login_filled.png)
+
+### 3. Dashboard (`/dashboard`)
+KPI cards (each clickable, linking to a filtered Employees/Seats view), floor occupancy bars, and a project utilization table built from `/dashboard/summary`, `/dashboard/project-utilization`, and `/dashboard/floor-utilization`.
+
+![Dashboard](Screenshots/04_dashboard.png)
+
+### 4. Employees (`/employees`)
+Search by name/email/employee code, view detail, and allocate/release seats for employees. *(Note: Actions are authorized based on user role).*
+
+![Employees](Screenshots/05_employees.png)
+
+### 5. Floor Map (`/seats`)
+Seating grid: pick a floor + zone to see every seat color-coded by status (available/occupied/reserved/maintenance) in a grid, with hover detail for seat number and bay. Or filter by status to get a paginated cross-floor list instead.
+
+![Floor Map](Screenshots/06_floor_map.png)
+
+### 6. AI Assistant (`/assistant`)
+Chat UI against `POST /ai/query`, with example prompts and an optional email field for “my seat” / “who’s near me” questions.
+
+![AI Assistant](Screenshots/07_assistant.png)
 
 ---
+
 
 ## API Reference
 
