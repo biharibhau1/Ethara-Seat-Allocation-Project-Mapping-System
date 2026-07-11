@@ -9,6 +9,16 @@ export default function StatCard({ label, value, tone = "default", to }) {
     maintenance: "text-maintenance",
   };
 
+  // Colored left-edge accent per tone, echoing the accent-green language
+  // used on the login page instead of every card looking identical.
+  const borderClasses = {
+    default: "border-l-line",
+    available: "border-l-available",
+    occupied: "border-l-occupied",
+    reserved: "border-l-reserved",
+    maintenance: "border-l-maintenance",
+  };
+
   const content = (
     <>
       <div className="text-xs uppercase tracking-wide text-muted mb-1.5">{label}</div>
@@ -18,16 +28,18 @@ export default function StatCard({ label, value, tone = "default", to }) {
     </>
   );
 
+  const borderStyle = `border-l-[3px] ${borderClasses[tone]}`;
+
   if (to) {
     return (
       <Link
         to={to}
-        className="block bg-surface border border-line rounded-lg px-5 py-4 transition-colors hover:border-brand hover:bg-brand-light/40 cursor-pointer"
+        className={`block bg-surface border border-line ${borderStyle} rounded-lg px-5 py-4 transition-colors hover:border-brand hover:bg-brand-light/40 cursor-pointer`}
       >
         {content}
       </Link>
     );
   }
 
-  return <div className="bg-surface border border-line rounded-lg px-5 py-4">{content}</div>;
+  return <div className={`bg-surface border border-line ${borderStyle} rounded-lg px-5 py-4`}>{content}</div>;
 }

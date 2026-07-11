@@ -75,11 +75,19 @@ def floor_utilization(db: Session = Depends(get_db), _user: models.User = Depend
         available = db.query(func.count(models.Seat.id)).filter(
             models.Seat.floor == floor, models.Seat.status == models.SeatStatus.available
         ).scalar()
+        reserved = db.query(func.count(models.Seat.id)).filter(
+            models.Seat.floor == floor, models.Seat.status == models.SeatStatus.reserved
+        ).scalar()
+        maintenance = db.query(func.count(models.Seat.id)).filter(
+            models.Seat.floor == floor, models.Seat.status == models.SeatStatus.maintenance
+        ).scalar()
         result.append({
             "floor": floor,
             "total_seats": total,
             "occupied": occupied,
             "available": available,
+            "reserved": reserved,
+            "maintenance": maintenance,
             "occupancy_pct": round((occupied / total * 100), 1) if total else 0,
         })
     return sorted(result, key=lambda r: r["floor"])

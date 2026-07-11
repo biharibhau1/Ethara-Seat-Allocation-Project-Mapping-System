@@ -52,22 +52,54 @@ export default function Dashboard() {
 
       <section className="grid md:grid-cols-2 gap-8">
         <div>
-          <h2 className="font-display font-semibold text-sm uppercase tracking-wide text-muted mb-3">
-            Floor occupancy
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-display font-semibold text-sm uppercase tracking-wide text-muted">
+              Floor occupancy
+            </h2>
+            <div className="flex gap-3 text-[11px] text-muted">
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-sm bg-occupied inline-block" /> Occupied
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-sm bg-available inline-block" /> Available
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-sm bg-reserved inline-block" /> Reserved
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-sm bg-maintenance inline-block" /> Maintenance
+              </span>
+            </div>
+          </div>
           <div className="bg-surface border border-line rounded-lg p-5 flex flex-col gap-4">
             {floors.map((f) => (
               <div key={f.floor}>
                 <div className="flex justify-between text-sm mb-1.5">
                   <span className="font-medium">Floor {f.floor}</span>
                   <span className="text-muted font-mono text-xs">
-                    {f.occupied}/{f.total_seats} · {f.occupancy_pct}%
+                    {f.occupied}/{f.total_seats} occupied · {f.occupancy_pct}%
                   </span>
                 </div>
-                <div className="h-2 rounded-full bg-canvas overflow-hidden">
+                <div className="h-2.5 rounded-full bg-canvas overflow-hidden flex">
                   <div
-                    className="h-full bg-occupied rounded-full"
-                    style={{ width: `${f.occupancy_pct}%` }}
+                    className="h-full bg-occupied"
+                    style={{ width: `${(f.occupied / f.total_seats) * 100}%` }}
+                    title={`${f.occupied} occupied`}
+                  />
+                  <div
+                    className="h-full bg-available"
+                    style={{ width: `${(f.available / f.total_seats) * 100}%` }}
+                    title={`${f.available} available`}
+                  />
+                  <div
+                    className="h-full bg-reserved"
+                    style={{ width: `${(f.reserved / f.total_seats) * 100}%` }}
+                    title={`${f.reserved} reserved`}
+                  />
+                  <div
+                    className="h-full bg-maintenance"
+                    style={{ width: `${(f.maintenance / f.total_seats) * 100}%` }}
+                    title={`${f.maintenance} maintenance`}
                   />
                 </div>
               </div>
