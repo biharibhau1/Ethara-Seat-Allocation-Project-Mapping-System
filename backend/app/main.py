@@ -1,6 +1,10 @@
-from fastapi import FastAPI
+import os
+
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
+from . import models
+from .auth import require_roles
 from .database import Base, engine
 from .routers import employees, projects, seats, dashboard, ai, auth
 
@@ -11,8 +15,6 @@ app = FastAPI(
     description="Manages seat allocation, project mapping, and floor utilization for ~5,000 employees.",
     version="1.0.0",
 )
-
-import os
 
 # Dynamically load CORS origins from environment variable if set, otherwise use defaults
 cors_origins_str = os.getenv("CORS_ORIGINS")
@@ -52,8 +54,21 @@ def health():
     return {"status": "healthy"}
 
 
-@app.get("/seed")
-def trigger_seed():
+@app.post("/seed")
+def trigger_seed(_admin: models.User = Depends(require_roles(models.UserRole.admin))):
+    """
+    Remote re-seed, for convenience when setting up a fresh deployment.
+
+    SECURITY: this drops and regenerates every table (all employees, seats,
+    allocations, and users are wiped and replaced with fresh demo data).
+    It is admin-only and POST-only on purpose:
+    - Admin-only, because anyone who could call this could destroy all
+      production data with a single request.
+    - POST, not GET, because a destructive action must never sit behind a
+      plain link/GET request — GETs are expected to be safe and are
+      commonly pre-fetched, crawled, or cached.
+    Call with: curl -X POST <backend-url>/seed -H "Authorization: Bearer <admin-token>"
+    """
     from .seed import seed
     try:
         seed()
