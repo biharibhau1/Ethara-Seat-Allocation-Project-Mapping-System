@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 # ---------- Project ----------
@@ -117,11 +117,24 @@ class TokenOut(BaseModel):
     employee_id: Optional[int] = None
 
 
+class LinkedEmployeeOut(BaseModel):
+    id: int
+    name: str
+    email: str
+    department: Optional[str]
+    role: Optional[str]
+    project_id: Optional[int]
+
+    class Config:
+        from_attributes = True
+
+
 class UserOut(BaseModel):
     id: int
     username: str
     role: str
     employee_id: Optional[int] = None
+    employee: Optional[LinkedEmployeeOut] = None
 
     class Config:
         from_attributes = True
@@ -132,3 +145,8 @@ class UserCreate(BaseModel):
     password: str
     role: str
     employee_id: Optional[int] = None
+
+
+class PasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=6)

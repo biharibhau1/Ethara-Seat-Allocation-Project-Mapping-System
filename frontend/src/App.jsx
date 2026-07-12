@@ -6,8 +6,10 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
+import Members from "./pages/Members";
 import Seats from "./pages/Seats";
 import Assistant from "./pages/Assistant";
+import Settings from "./pages/Settings";
 
 function AppLayout({ children }) {
   return (
@@ -35,8 +37,10 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
           <Route path="/employees" element={<Protected><Employees /></Protected>} />
+          <Route path="/members" element={<Protected><Members /></Protected>} />
           <Route path="/seats" element={<Protected><Seats /></Protected>} />
           <Route path="/assistant" element={<Protected><Assistant /></Protected>} />
+          <Route path="/settings" element={<Protected><Settings /></Protected>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

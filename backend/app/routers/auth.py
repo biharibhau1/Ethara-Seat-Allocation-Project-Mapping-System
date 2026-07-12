@@ -4,7 +4,14 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..database import get_db
-from ..auth import authenticate_user, create_access_token, require_roles, hash_password, get_current_user
+from ..auth import (
+    authenticate_user,
+    create_access_token,
+    require_roles,
+    hash_password,
+    verify_password,
+    get_current_user,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -24,10 +31,30 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 
 @router.get("/me", response_model=schemas.UserOut)
-def me(user: models.User = Depends(get_current_user)):
+def me(user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    employee = None
+    if user.employee_id:
+        employee = db.query(models.Employee).get(user.employee_id)
     return schemas.UserOut(
-        id=user.id, username=user.username, role=user.role.value, employee_id=user.employee_id
+        id=user.id,
+        username=user.username,
+        role=user.role.value,
+        employee_id=user.employee_id,
+        employee=employee,
     )
+
+
+@router.post("/password", status_code=200)
+def change_password(
+    payload: schemas.PasswordChangeRequest,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    if not verify_password(payload.current_password, user.hashed_password):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    user.hashed_password = hash_password(payload.new_password)
+    db.commit()
+    return {"message": "Password updated successfully"}
 
 
 @router.post("/users", response_model=schemas.UserOut, status_code=201)

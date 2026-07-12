@@ -43,6 +43,7 @@ def list_employees(
     _user: models.User = Depends(get_current_user),
     q: Optional[str] = Query(None, description="search by name/email/employee_code"),
     project_id: Optional[int] = None,
+    department: Optional[str] = None,
     status: Optional[str] = None,
     limit: int = Query(50, le=500),
     offset: int = 0,
@@ -59,6 +60,8 @@ def list_employees(
         )
     if project_id:
         query = query.filter(models.Employee.project_id == project_id)
+    if department:
+        query = query.filter(models.Employee.department == department)
     if status:
         query = query.filter(models.Employee.status == status)
     return query.offset(offset).limit(limit).all()

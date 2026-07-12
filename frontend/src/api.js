@@ -62,6 +62,8 @@ export const api = {
     return res.json(); // { access_token, role, username, employee_id }
   },
   me: () => request("/auth/me"),
+  changePassword: (current_password, new_password) =>
+    request("/auth/password", { method: "POST", body: JSON.stringify({ current_password, new_password }) }),
 
   // dashboard
   summary: () => request("/dashboard/summary"),

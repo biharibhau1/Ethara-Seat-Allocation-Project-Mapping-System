@@ -4,6 +4,7 @@ import { useAuth } from "../auth/AuthContext";
 const links = [
   { to: "/dashboard", label: "Dashboard", icon: "◧" },
   { to: "/employees", label: "Employees", icon: "◔" },
+  { to: "/members", label: "Members", icon: "◈" },
   { to: "/seats", label: "Floor Map", icon: "▦" },
   { to: "/assistant", label: "Assistant", icon: "✦" },
 ];
@@ -29,9 +30,10 @@ export default function Sidebar() {
             key={l.to}
             to={l.to}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive
-                ? "bg-brand-light text-brand"
-                : "text-muted hover:bg-canvas hover:text-ink"
+              `flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-brand-light text-brand"
+                  : "text-muted hover:bg-canvas hover:text-ink"
               }`
             }
           >
@@ -47,12 +49,24 @@ export default function Sidebar() {
             <div className="text-xs text-muted uppercase tracking-wide">{user.role}</div>
           </div>
         )}
-        <button
-          onClick={handleLogout}
-          className="text-xs px-2.5 py-1.5 rounded-md border border-line text-muted hover:bg-canvas w-full text-left"
-        >
-          Sign out
-        </button>
+        <div className="flex gap-2">
+          <NavLink
+            to="/settings"
+            className={({ isActive }) =>
+              `flex-1 text-xs px-2.5 py-1.5 rounded-md border text-center ${
+                isActive ? "border-brand text-brand bg-brand-light" : "border-line text-muted hover:bg-canvas"
+              }`
+            }
+          >
+            Settings
+          </NavLink>
+          <button
+            onClick={handleLogout}
+            className="flex-1 text-xs px-2.5 py-1.5 rounded-md border border-line text-muted hover:bg-canvas"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
     </aside>
   );
