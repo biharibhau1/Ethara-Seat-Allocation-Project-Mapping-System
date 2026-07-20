@@ -6,23 +6,25 @@
   --font-sans: "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
 
-  --color-canvas: #F7F7F4;
+  --color-canvas: #F7F7FC;
   --color-surface: #FFFFFF;
-  --color-line: #E3E3DE;
-  --color-ink: #1F2421;
-  --color-muted: #6B7268;
+  --color-line: #E9E9F2;
+  --color-ink: #16161F;
+  --color-muted: #6C6C82;
 
-  --color-brand: #2F5D50;
-  --color-brand-light: #E8F0EC;
+  --color-brand: #5B3DF5;
+  --color-brand-light: #EFEBFF;
+  --color-accent: #FF5D73;
+  --color-accent-light: #FFEAEE;
 
-  --color-available: #3FA66B;
-  --color-available-bg: #E9F6EE;
-  --color-occupied: #2F5D50;
-  --color-occupied-bg: #E8F0EC;
-  --color-reserved: #C9922A;
-  --color-reserved-bg: #FBF1DF;
-  --color-maintenance: #B5484B;
-  --color-maintenance-bg: #FBEAEA;
+  --color-available: #16C784;
+  --color-available-bg: #E1FAEF;
+  --color-occupied: #5B3DF5;
+  --color-occupied-bg: #EFEBFF;
+  --color-reserved: #FFA629;
+  --color-reserved-bg: #FFF2DF;
+  --color-maintenance: #FF4757;
+  --color-maintenance-bg: #FFE7E9;
 }
 
 body {
@@ -33,4 +35,15 @@ body {
 
 ::selection {
   background: var(--color-brand-light);
+}
+
+.gradient-brand {
+  background: linear-gradient(135deg, var(--color-brand) 0%, #8B5CF6 55%, var(--color-accent) 100%);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }

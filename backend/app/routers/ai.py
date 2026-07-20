@@ -54,7 +54,15 @@ def ai_query(
     q = payload.query.strip()
     q_lower = q.lower()
 
-    # 1) "Where is employee <Name> seated?" / "where is my seat" + email
+    # 1) "Allocate a seat for a new employee joining today"
+    if "allocate" in q_lower and ("new employee" in q_lower or "new joiner" in q_lower or "joining" in q_lower):
+        return AIQueryResponse(
+            answer="To allocate a seat for a new joiner, please use POST /employees to create the "
+                   "employee record, then POST /seats/allocate with their employee_id. I can suggest "
+                   "the best available seat automatically based on their project's team zone."
+        )
+
+    # 2) "Where is employee <Name> seated?" / "where is my seat" + email
     name_match = re.search(
         r"employee\s+([A-Za-z][A-Za-z]*(?:\s+[A-Za-z]+)?)(?=\s+(?:is|seated|sit|located)\b|\s*\?|$)",
         q,
@@ -75,7 +83,7 @@ def ai_query(
             return AIQueryResponse(answer="I couldn't find that employee. Please check the name or email.")
         return AIQueryResponse(answer=_employee_seat_answer(db, employee))
 
-    # 2) "Which project am I assigned to?" / "which project is <name> assigned to"
+    # 3) "Which project am I assigned to?" / "which project is <name> assigned to"
     if "project" in q_lower and ("assigned" in q_lower or "which project" in q_lower) and "occupied" not in q_lower and "utilization" not in q_lower:
         assigned_name_match = re.search(
             r"is\s+([A-Za-z][A-Za-z]*(?:\s+[A-Za-z]+)?)\s+assigned", q, re.IGNORECASE
@@ -92,7 +100,7 @@ def ai_query(
             return AIQueryResponse(answer=f"{employee.name} is assigned to Project {project_name}.")
         return AIQueryResponse(answer="I couldn't find that employee to check their project.")
 
-    # 3) "Show all available seats on Floor X"
+    # 4) "Show all available seats on Floor X"
     floor_match = re.search(r"floor\s*(\d+)", q_lower)
     if "available seat" in q_lower or ("available" in q_lower and "seat" in q_lower):
         query = db.query(models.Seat).filter(models.Seat.status == models.SeatStatus.available)
@@ -104,7 +112,7 @@ def ai_query(
         listing = ", ".join(f"{s.zone}-{s.seat_number} (Floor {s.floor})" for s in seats)
         return AIQueryResponse(answer=f"Available seats: {listing}.")
 
-    # 4) "How many seats are occupied for Project X?"
+    # 5) "How many seats are occupied for Project X?"
     project_match = re.search(r"project\s+([A-Za-z][A-Za-z0-9\s]*)", q, re.IGNORECASE)
     if ("occupied" in q_lower or "utilization" in q_lower) and project_match:
         project_name = project_match.group(1).strip()
@@ -121,7 +129,7 @@ def ai_query(
         )
         return AIQueryResponse(answer=f"{occupied_count} seat(s) are currently occupied for Project {project.name}.")
 
-    # 5) "Who is sitting near me?" - same zone/floor as requester
+    # 6) "Who is sitting near me?" - same zone/floor as requester
     if "near me" in q_lower or "sitting near" in q_lower:
         employee = _find_employee(db, email=payload.email) if payload.email else None
         if not employee:
@@ -154,14 +162,6 @@ def ai_query(
             return AIQueryResponse(answer="No one else is currently allocated in your zone.")
         names = ", ".join(n.name for n in neighbors)
         return AIQueryResponse(answer=f"Colleagues near you in Floor {my_seat.floor}, Zone {my_seat.zone}: {names}.")
-
-    # 6) "Allocate a seat for a new employee joining today"
-    if "allocate" in q_lower and ("new employee" in q_lower or "new joiner" in q_lower or "joining" in q_lower):
-        return AIQueryResponse(
-            answer="To allocate a seat for a new joiner, please use POST /employees to create the "
-                   "employee record, then POST /seats/allocate with their employee_id. I can suggest "
-                   "the best available seat automatically based on their project's team zone."
-        )
 
     return AIQueryResponse(
         answer="I can help with: where an employee is seated, project assignment, available seats "
