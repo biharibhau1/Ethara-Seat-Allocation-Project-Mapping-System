@@ -35,7 +35,12 @@ async function request(path, options = {}) {
     let detail = res.statusText;
     try {
       const body = await res.json();
-      detail = body.detail || detail;
+      if (Array.isArray(body.detail)) {
+        // FastAPI validation errors: [{loc, msg, type}, ...]
+        detail = body.detail.map((d) => d.msg || JSON.stringify(d)).join("; ");
+      } else if (body.detail) {
+        detail = body.detail;
+      }
     } catch (_) {}
     if (res.status === 401) setToken(null); // stale/expired token
     throw new Error(detail);

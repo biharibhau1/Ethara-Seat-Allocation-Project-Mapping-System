@@ -42,7 +42,7 @@ def list_seats(
     floor: Optional[int] = None,
     zone: Optional[str] = None,
     status: Optional[str] = None,
-    limit: int = Query(100, le=1000),
+    limit: int = Query(100, le=2000),
     offset: int = 0,
 ):
     query = db.query(models.Seat)
@@ -61,7 +61,7 @@ def list_available_seats(
     _user: models.User = Depends(get_current_user),
     floor: Optional[int] = None,
     zone: Optional[str] = None,
-    limit: int = Query(100, le=1000),
+    limit: int = Query(100, le=2000),
 ):
     query = db.query(models.Seat).filter(models.Seat.status == models.SeatStatus.available)
     if floor is not None:
